@@ -18,22 +18,36 @@ type Task struct {
 	UpdatedAt string
 }
 
-func CreateTask(tasks []Task) error {
-	// get the file path and create a file if it doesn't exist
+func CreateTask(newTasks []Task) {
 	filePath := "tasks.json"
-	file, err := os.Create(filePath)
+	var existingTasks []Task
+
+	// check if the file already exists
+	// if the file doesn't exist, it will create a new file
+	// if the file exists, it recover the content into an slice
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		file, err := os.Create(filePath)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		defer file.Close()
+	} else {
+		data, err := os.ReadFile(filePath)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		json.Unmarshal(data, &existingTasks)
+	}
+
+	existingTasks = append(existingTasks, newTasks...)
+
+	// convert struct to JSON
+	data, err := json.MarshalIndent(existingTasks, "", "\t")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	defer file.Close()
-
-	// converts a Go struct into a JSON structure
-	data, err := json.MarshalIndent(tasks, "", "	")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	_, err = file.Write(data)
-	return err
+	os.WriteFile(filePath, data, 0644)
 }
