@@ -18,8 +18,9 @@ type Task struct {
 	UpdatedAt string
 }
 
-func CreateTask(newTasks []Task) {
-	filePath := "tasks.json"
+func CreateTask(newTasks []Task, fileName string) error {
+	filePath := fileName
+	var err error
 	var existingTasks []Task
 
 	// check if the file already exists
@@ -51,4 +52,5 @@ func CreateTask(newTasks []Task) {
 	}
 
 	os.WriteFile(filePath, data, 0644)
+	return err
 }
