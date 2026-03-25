@@ -11,7 +11,7 @@ func TestCreateTask(t *testing.T) {
 	defer os.Remove(testFile)
 
 	tasks := []Task{
-		{ID: 1, Description: "Task 1", Status: Status{Name: "todo"}},
+		{ID: 1, Description: "Task 1", Status: 0},
 	}
 
 	err := CreateTask(tasks, testFile)
@@ -30,8 +30,8 @@ func TestCreateMultipletTasks(t *testing.T) {
 
 	// Creates a new test file
 	tasks := []Task{
-		{ID: 1, Description: "Task 1", Status: Status{Name: "todo"}},
-		{ID: 2, Description: "Task 2", Status: Status{Name: "in_progress"}},
+		{ID: 1, Description: "Task 1", Status: 0},
+		{ID: 2, Description: "Task 2", Status: 1},
 	}
 
 	err := CreateTask(tasks, testFile)
@@ -60,7 +60,7 @@ func TestCreateMultipletTasks(t *testing.T) {
 
 	// Creating a third task and test the file
 	newTasks := []Task{
-		{ID: 3, Description: "Task 3", Status: Status{Name: "todo"}},
+		{ID: 3, Description: "Task 3", Status: 0},
 	}
 
 	err = CreateTask(newTasks, testFile)
@@ -91,8 +91,8 @@ func TestListTasks(t *testing.T) {
 	defer os.Remove(testFile)
 
 	tasks := []Task{
-		{ID: 1, Description: "Task 1", Status: Status{Name: "todo"}},
-		{ID: 2, Description: "Task 2", Status: Status{Name: "in_progress"}},
+		{ID: 1, Description: "Task 1", Status: 0},
+		{ID: 2, Description: "Task 2", Status: 1},
 	}
 
 	// first creates the test file
@@ -125,5 +125,89 @@ func TestListTasksFileNotDoesntExist(t *testing.T) {
 
 	if listTasks != nil {
 		t.Errorf("Expected nil tasks, got a slice with tasks")
+	}
+}
+
+func TestListIncompleteTasks(t *testing.T) {
+	testFile := "test.json"
+	defer os.Remove(testFile)
+
+	tasks := []Task{
+		{ID: 1, Description: "Task 1", Status: 0},
+		{ID: 2, Description: "Task 2", Status: 1},
+		{ID: 3, Description: "Task 3", Status: 2},
+	}
+	CreateTask(tasks, testFile)
+
+	tasks, err := ListIncompleteTasks(testFile)
+	if err != nil {
+		t.Errorf("Failed to filter incomplete tasks: %v", err)
+	}
+
+	if len(tasks) != 2 {
+		t.Errorf("Expected 2 tasks, got %d", len(tasks))
+	}
+}
+
+func TestListCompleteTasks(t *testing.T) {
+	testFile := "test.json"
+	defer os.Remove(testFile)
+
+	tasks := []Task{
+		{ID: 1, Description: "Task 1", Status: 0},
+		{ID: 2, Description: "Task 2", Status: 1},
+		{ID: 3, Description: "Task 3", Status: 2},
+	}
+	CreateTask(tasks, testFile)
+
+	tasks, err := ListCompleteTasks(testFile)
+	if err != nil {
+		t.Errorf("Failed to filter complete tasks: %v", err)
+	}
+
+	if len(tasks) != 1 {
+		t.Errorf("Expected 1 task, got %d", len(tasks))
+	}
+}
+
+func TestListTodoTasks(t *testing.T) {
+	testFile := "test.json"
+	defer os.Remove(testFile)
+
+	tasks := []Task{
+		{ID: 1, Description: "Task 1", Status: 0},
+		{ID: 2, Description: "Task 2", Status: 1},
+		{ID: 3, Description: "Task 3", Status: 2},
+	}
+	CreateTask(tasks, testFile)
+
+	tasks, err := ListTodoTasks(testFile)
+	if err != nil {
+		t.Errorf("Failed to filter incomplete tasks: %v", err)
+	}
+
+	if len(tasks) != 1 {
+		t.Errorf("Expected 1 task, got %d", len(tasks))
+	}
+}
+
+func TestListInProgressTasks(t *testing.T) {
+	testFile := "test.json"
+	defer os.Remove(testFile)
+
+	tasks := []Task{
+		{ID: 1, Description: "Task 1", Status: 0},
+		{ID: 2, Description: "Task 2", Status: 1},
+		{ID: 3, Description: "Task 3", Status: 2},
+	}
+	CreateTask(tasks, testFile)
+
+	tasks, err := ListInProgressTasks(testFile)
+	if err != nil {
+		t.Errorf("Failed to filter incomplete tasks: %v", err)
+	}
+
+	if len(tasks) != 1 {
+		t.Errorf("Expected 1 task, got %d", len(tasks))
 	}
 }

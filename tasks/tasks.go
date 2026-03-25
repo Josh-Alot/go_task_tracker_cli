@@ -6,16 +6,58 @@ import (
 	"os"
 )
 
-type Status struct {
-	Name string
+type Status int
+
+const (
+	Todo Status = iota
+	InProgress
+	Done
+)
+
+func (status Status) String() string {
+	switch status {
+	case Todo:
+		return "todo"
+	case InProgress:
+		return "in_progress"
+	case Done:
+		return "done"
+	default:
+		return "unknown"
+	}
+}
+
+func (status Status) MarshalJSON() ([]byte, error) {
+	return json.Marshal(status.String())
+}
+
+func (status *Status) UnmarshalJSON(data []byte) error {
+	var str string
+
+	if err := json.Unmarshal(data, &str); err != nil {
+		return err
+	}
+
+	switch str {
+	case "todo":
+		*status = Todo
+	case "in_progress":
+		*status = InProgress
+	case "done":
+		*status = Done
+	default:
+		*status = Todo
+	}
+
+	return nil
 }
 
 type Task struct {
 	ID          int
 	Description string
-	Status
-	CreatedAt string
-	UpdatedAt string
+	Status      Status
+	CreatedAt   string
+	UpdatedAt   string
 }
 
 func CreateTask(newTasks []Task, filePath string) error {
@@ -64,4 +106,80 @@ func ListTasks(filePath string) ([]Task, error) {
 	json.Unmarshal(data, &tasks)
 
 	return tasks, err
+}
+
+func ListIncompleteTasks(filePath string) ([]Task, error) {
+	data, err := os.ReadFile(filePath)
+	if err != nil {
+		return nil, err
+	}
+
+	tasks := []Task{}
+	json.Unmarshal(data, &tasks)
+
+	var incompleteTasks []Task
+	for _, task := range tasks {
+		if task.Status != 2 {
+			incompleteTasks = append(incompleteTasks, task)
+		}
+	}
+
+	return incompleteTasks, err
+}
+
+func ListCompleteTasks(filePath string) ([]Task, error) {
+	data, err := os.ReadFile(filePath)
+	if err != nil {
+		return nil, err
+	}
+
+	tasks := []Task{}
+	json.Unmarshal(data, &tasks)
+
+	var completeTasks []Task
+	for _, task := range tasks {
+		if task.Status == 2 {
+			completeTasks = append(completeTasks, task)
+		}
+	}
+
+	return completeTasks, err
+}
+
+func ListTodoTasks(filePath string) ([]Task, error) {
+	data, err := os.ReadFile(filePath)
+	if err != nil {
+		return nil, err
+	}
+
+	tasks := []Task{}
+	json.Unmarshal(data, &tasks)
+
+	var todoTasks []Task
+	for _, task := range tasks {
+		if task.Status == 0 {
+			todoTasks = append(todoTasks, task)
+		}
+	}
+
+	return todoTasks, err
+}
+
+func ListInProgressTasks(filePath string) ([]Task, error) {
+	data, err := os.ReadFile(filePath)
+	if err != nil {
+		return nil, err
+	}
+
+	tasks := []Task{}
+	json.Unmarshal(data, &tasks)
+
+	var inProgressTasks []Task
+	for _, task := range tasks {
+		if task.Status == 1 {
+			inProgressTasks = append(inProgressTasks, task)
+		}
+	}
+
+	return inProgressTasks, err
 }
