@@ -63,7 +63,6 @@ type Task struct {
 	UpdatedAt   string
 }
 
-// TODO: implement a feature to auto-increment ID
 func CreateTask(newTasks []Task, filePath string) error {
 	var err error
 	var existingTasks []Task
