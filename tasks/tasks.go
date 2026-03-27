@@ -2,6 +2,7 @@ package tasks
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 )
@@ -119,7 +120,7 @@ func ListIncompleteTasks(filePath string) ([]Task, error) {
 
 	var incompleteTasks []Task
 	for _, task := range tasks {
-		if task.Status != 2 {
+		if task.Status != Done {
 			incompleteTasks = append(incompleteTasks, task)
 		}
 	}
@@ -138,7 +139,7 @@ func ListCompleteTasks(filePath string) ([]Task, error) {
 
 	var completeTasks []Task
 	for _, task := range tasks {
-		if task.Status == 2 {
+		if task.Status == Done {
 			completeTasks = append(completeTasks, task)
 		}
 	}
@@ -157,7 +158,7 @@ func ListTodoTasks(filePath string) ([]Task, error) {
 
 	var todoTasks []Task
 	for _, task := range tasks {
-		if task.Status == 0 {
+		if task.Status == Todo {
 			todoTasks = append(todoTasks, task)
 		}
 	}
@@ -176,10 +177,72 @@ func ListInProgressTasks(filePath string) ([]Task, error) {
 
 	var inProgressTasks []Task
 	for _, task := range tasks {
-		if task.Status == 1 {
+		if task.Status == InProgress {
 			inProgressTasks = append(inProgressTasks, task)
 		}
 	}
 
 	return inProgressTasks, err
+}
+
+func UpdateTaskDescription(filePath string, id int, description string) ([]Task, error) {
+	found := false
+	data, err := os.ReadFile(filePath)
+	if err != nil {
+		return nil, err
+	}
+
+	tasks := []Task{}
+	json.Unmarshal(data, &tasks)
+
+	for i, _ := range tasks {
+		if tasks[i].ID == id {
+			tasks[i].Description = description
+			found = true
+		}
+	}
+
+	if !found {
+		return nil, fmt.Errorf("Task %d not found", id)
+	}
+
+	data, err = json.MarshalIndent(tasks, "", "\t")
+	if err != nil {
+		return nil, err
+	}
+
+	os.WriteFile(filePath, data, 0644)
+
+	return tasks, err
+}
+
+func UpdateTaskStatus(filePath string, id int, status Status) ([]Task, error) {
+	found := false
+	data, err := os.ReadFile(filePath)
+	if err != nil {
+		return nil, err
+	}
+
+	tasks := []Task{}
+	json.Unmarshal(data, &tasks)
+
+	for i, _ := range tasks {
+		if tasks[i].ID == id {
+			tasks[i].Status = status
+			found = true
+		}
+	}
+
+	if !found {
+		return nil, fmt.Errorf("Task %d not found", id)
+	}
+
+	data, err = json.MarshalIndent(tasks, "", "\t")
+	if err != nil {
+		return nil, err
+	}
+
+	os.WriteFile(filePath, data, 0644)
+
+	return tasks, err
 }

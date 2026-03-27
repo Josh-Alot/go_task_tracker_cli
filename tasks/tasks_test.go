@@ -11,7 +11,7 @@ func TestCreateTask(t *testing.T) {
 	defer os.Remove(testFile)
 
 	tasks := []Task{
-		{ID: 1, Description: "Task 1", Status: 0},
+		{ID: 1, Description: "Task 1", Status: Todo},
 	}
 
 	err := CreateTask(tasks, testFile)
@@ -209,5 +209,73 @@ func TestListInProgressTasks(t *testing.T) {
 
 	if len(tasks) != 1 {
 		t.Errorf("Expected 1 task, got %d", len(tasks))
+	}
+}
+
+func TestUpdateTaskDescription(t *testing.T) {
+	testFile := "test.json"
+	defer os.Remove(testFile)
+
+	tasks := []Task{
+		{ID: 1, Description: "Task 1", Status: 0},
+		{ID: 2, Description: "Task 2", Status: 1},
+		{ID: 3, Description: "Task 3", Status: 2},
+	}
+	CreateTask(tasks, testFile)
+
+	tasks, err := UpdateTaskDescription(testFile, 1, "Task 1 Updated")
+	if err != nil {
+		t.Errorf("Update task description failed: %v", err)
+	}
+}
+
+func TestUpdateTaskDescriptionNotFound(t *testing.T) {
+	testFile := "test.json"
+	defer os.Remove(testFile)
+
+	tasks := []Task{
+		{ID: 1, Description: "Task 1", Status: 0},
+		{ID: 2, Description: "Task 2", Status: 1},
+		{ID: 3, Description: "Task 3", Status: 2},
+	}
+	CreateTask(tasks, testFile)
+
+	tasks, err := UpdateTaskDescription(testFile, 4, "Task 4 Updated")
+	if err == nil {
+		t.Errorf("Expected an error, got updated tasks")
+	}
+}
+
+func TestUpdateTaskStatus(t *testing.T) {
+	testFile := "test.json"
+	defer os.Remove(testFile)
+
+	tasks := []Task{
+		{ID: 1, Description: "Task 1", Status: 0},
+		{ID: 2, Description: "Task 2", Status: 1},
+		{ID: 3, Description: "Task 3", Status: 2},
+	}
+	CreateTask(tasks, testFile)
+
+	tasks, err := UpdateTaskStatus(testFile, 1, Done)
+	if err != nil {
+		t.Errorf("Update task description failed: %v", err)
+	}
+}
+
+func TestUpdateTaskStatusNotFound(t *testing.T) {
+	testFile := "test.json"
+	defer os.Remove(testFile)
+
+	tasks := []Task{
+		{ID: 1, Description: "Task 1", Status: 0},
+		{ID: 2, Description: "Task 2", Status: 1},
+		{ID: 3, Description: "Task 3", Status: 2},
+	}
+	CreateTask(tasks, testFile)
+
+	tasks, err := UpdateTaskStatus(testFile, 4, Done)
+	if err == nil {
+		t.Errorf("Expected an error, got updated status")
 	}
 }
