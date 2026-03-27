@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"slices"
 )
 
 type Status int
@@ -61,6 +62,7 @@ type Task struct {
 	UpdatedAt   string
 }
 
+// TODO: implement a feature to auto-increment ID
 func CreateTask(newTasks []Task, filePath string) error {
 	var err error
 	var existingTasks []Task
@@ -245,4 +247,59 @@ func UpdateTaskStatus(filePath string, id int, status Status) ([]Task, error) {
 	os.WriteFile(filePath, data, 0644)
 
 	return tasks, err
+}
+
+func DeleteTask(filePath string, id int) ([]Task, error) {
+	found := false
+	data, err := os.ReadFile(filePath)
+	if err != nil {
+		return nil, err
+	}
+
+	tasks := []Task{}
+	json.Unmarshal(data, &tasks)
+
+	for i, _ := range tasks {
+		if tasks[i].ID == id {
+			tasks = slices.Delete(tasks, i, i+1)
+
+			found = true
+		}
+	}
+
+	if !found {
+		return nil, fmt.Errorf("Task %d not found", id)
+	}
+
+	data, err = json.MarshalIndent(tasks, "", "\t")
+	if err != nil {
+		return nil, err
+	}
+
+	os.WriteFile(filePath, data, 0644)
+
+	return tasks, err
+}
+
+func DeleteAllTasks(filePath string) ([]Task, error) {
+	data, err := os.ReadFile(filePath)
+	if err != nil {
+		return nil, err
+	}
+
+	tasks := []Task{}
+	json.Unmarshal(data, &tasks)
+
+	if len(tasks) < 1 {
+		return nil, fmt.Errorf("Tasks not found")
+	}
+
+	data, err = json.Marshal([]Task{})
+	if err != nil {
+		return nil, err
+	}
+
+	os.WriteFile(filePath, data, 0644)
+
+	return nil, err
 }

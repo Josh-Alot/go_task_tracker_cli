@@ -242,7 +242,7 @@ func TestUpdateTaskDescriptionNotFound(t *testing.T) {
 
 	tasks, err := UpdateTaskDescription(testFile, 4, "Task 4 Updated")
 	if err == nil {
-		t.Errorf("Expected an error, got updated tasks")
+		t.Errorf("Expected an error, got nil")
 	}
 }
 
@@ -276,6 +276,87 @@ func TestUpdateTaskStatusNotFound(t *testing.T) {
 
 	tasks, err := UpdateTaskStatus(testFile, 4, Done)
 	if err == nil {
-		t.Errorf("Expected an error, got updated status")
+		t.Errorf("Expected an error, got nil")
+	}
+}
+
+func TestDeleteTask(t *testing.T) {
+	testFile := "test.json"
+	defer os.Remove(testFile)
+
+	tasks := []Task{
+		{ID: 1, Description: "Task 1", Status: 0},
+		{ID: 2, Description: "Task 2", Status: 1},
+		{ID: 3, Description: "Task 3", Status: 2},
+	}
+	CreateTask(tasks, testFile)
+
+	tasks, err := DeleteTask(testFile, 3)
+	if err != nil {
+		t.Errorf("Delete task failed: %v", err)
+	}
+}
+
+func TestDeleteTaskNotFound(t *testing.T) {
+	testFile := "test.json"
+	defer os.Remove(testFile)
+
+	tasks := []Task{
+		{ID: 1, Description: "Task 1", Status: 0},
+		{ID: 2, Description: "Task 2", Status: 1},
+		{ID: 3, Description: "Task 3", Status: 2},
+	}
+	CreateTask(tasks, testFile)
+
+	tasks, err := DeleteTask(testFile, 4)
+	if err == nil {
+		t.Errorf("Expected an error, got nil")
+	}
+}
+
+func TestDeleteAllTasks(t *testing.T) {
+	testFile := "test.json"
+	defer os.Remove(testFile)
+
+	tasks := []Task{
+		{ID: 1, Description: "Task 1", Status: 0},
+		{ID: 2, Description: "Task 2", Status: 1},
+		{ID: 3, Description: "Task 3", Status: 2},
+	}
+	CreateTask(tasks, testFile)
+
+	tasks, err := DeleteAllTasks(testFile)
+	if err != nil {
+		t.Errorf("Delete task failed: %v", err)
+	}
+}
+
+func TestDeleteAllTasksFileNotFound(t *testing.T) {
+	testFile := "test.json"
+	defer os.Remove(testFile)
+
+	tasks := []Task{
+		{ID: 1, Description: "Task 1", Status: 0},
+		{ID: 2, Description: "Task 2", Status: 1},
+		{ID: 3, Description: "Task 3", Status: 2},
+	}
+	CreateTask(tasks, testFile)
+
+	tasks, err := DeleteAllTasks("test2.json")
+	if err == nil {
+		t.Errorf("Expected error, got nil")
+	}
+}
+
+func TestDeleteAllTasksTaskNotFound(t *testing.T) {
+	testFile := "test.json"
+	defer os.Remove(testFile)
+
+	tasks := []Task{}
+	CreateTask(tasks, testFile)
+
+	tasks, err := DeleteAllTasks(testFile)
+	if err == nil {
+		t.Errorf("Expected error, got nil")
 	}
 }
